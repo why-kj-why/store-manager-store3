@@ -86,6 +86,11 @@ def store_manager_app():
             "sql": "SELECT f.NetExVATUSDPlan FROM Fact_Store_Plan f JOIN dim_Location_Latest l ON f.LocationLatestKey = l.LocationLatestKey WHERE l.LatestLocation = 'FIVE POINTS PLAZA';",
             "nlr": "The data table returned consists of a series of net margin values in USD for the store located at FIVE POINTS PLAZA. Each value represents a recorded net margin, with some values appearing multiple times, indicating that these margins may have been recorded on different occasions or under different conditions.\n\nThe margins range from 0.0 to 11,009.72 USD, showcasing a variety of performance levels. Notably, several entries are zero, suggesting instances where the store may not have generated a profit. The highest recorded net margin is 11,009.72 USD, while the lowest is 0.0 USD, reflecting a significant variance in profitability.\n\nOverall, this data provides a snapshot of the financial performance of the store, highlighting both successful and challenging periods.",
         },
+        "What is the net sales on July 31, 2023 compared to the same period last year for latest location of store FIVE POINTS PLAZA?":
+        {
+            "sql": "SELECT f.NetSaleLocal, f.NetSaleLocalLY FROM fact_Sale f JOIN dim_Calendar c ON f.CalendarKey = c.CalendarKey JOIN dim_Location_Latest l ON f.LocationLatestKey = l.LocationLatestKey WHERE l.LatestLocation = 'FIVE POINTS PLAZA' AND c.CalendarDate = '2023-07-31';",
+            "nlr": "On July 31, 2023, the net sales for the latest location of the store FIVE POINTS PLAZA were as follows: $80, $196.96, and $484.48. In comparison, there were no net sales recorded for the same period last year."
+        },
     }
 
     if 'queries' not in st.session_state:
