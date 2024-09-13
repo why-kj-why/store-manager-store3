@@ -2,16 +2,13 @@ import streamlit as st
 from pandas import DataFrame
 from pymysql import connect
 
-# database credentials
 DB_HOST = "tellmoredb.cd24ogmcy170.us-east-1.rds.amazonaws.com"
 DB_USER = "admin"
 DB_PASS = "2yYKKH8lUzaBvc92JUxW"
 DB_PORT = "3306"
 DB_NAME = "claires"
-#DB_NAME = "retail_panopticon"
 CONVO_DB_NAME = "store_questions"
 
-# Claire's Accessories' colours
 CLAIRE_DEEP_PURPLE = "#553D94"
 CLAIRE_MAUVE = "#D2BBFF"
 
@@ -22,7 +19,6 @@ st.set_page_config(
     page_icon = 'claires-logo.svg',
 )
 
-# session state variables
 if 'history' not in st.session_state:
     st.session_state['history'] = []
 
@@ -40,16 +36,6 @@ def connect_to_db(db_name):
         password = DB_PASS,
         db = db_name
     )
-
-def execute_query(query, connection):
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute(query)
-            getResult = cursor.fetchall()
-            columns = [column[0] for column in cursor.description]
-        return DataFrame(getResult, columns = columns)
-    finally:
-        connection.close()
 
 def set_custom_css():
     custom_css = """
@@ -89,14 +75,25 @@ def store_manager_app():
         image_data = image.read()
     st.logo(image=image_data)
 
-    store_questions = {}
+    store_questions = {
+        "Select a query": None,
+        "What is the sum of number of transactions this year compared to last year for latest location of store FIVE POINTS PLAZA?": {
+            "sql": "SELECT SUM(f.TransactionCountTY) AS TotalTransactionsTY, SUM(f.TransactionCountLY) AS TotalTransactionsLY FROM fact_Basket f JOIN dim_Location_Latest l ON f.LocationLatestKey = l.LocationLatestKey WHERE l.LatestLocation = 'FIVE POINTS PLAZA';",
+            "nlr": "The data table returned indicates that the total number of transactions for the latest location of the store, FIVE POINTS PLAZA, this year is 5,188, while the number of transactions from last year is 0. This suggests that the store has either just opened this year or has not recorded any transactions in the previous year.",
+            
+        },
+        "What are the net margins in USD for store with latest location FIVE POINTS PLAZA?": {
+            "sql": "SELECT f.NetExVATUSDPlan FROM Fact_Store_Plan f JOIN dim_Location_Latest l ON f.LocationLatestKey = l.LocationLatestKey WHERE l.LatestLocation = 'FIVE POINTS PLAZA';",
+            "nlr": ""The data table returned consists of a series of net margin values in USD for the store located at FIVE POINTS PLAZA. Each value represents a recorded net margin, with some values appearing multiple times, indicating that these margins may have been recorded on different occasions or under different conditions.\n\nThe margins range from 0.0 to 11,009.72 USD, showcasing a variety of performance levels. Notably, several entries are zero, suggesting instances where the store may not have generated a profit. The highest recorded net margin is 11,009.72 USD, while the lowest is 0.0 USD, reflecting a significant variance in profitability.\n\nOverall, this data provides a snapshot of the financial performance of the store, highlighting both successful and challenging periods."",
+        },
+    }
 
     if 'queries' not in st.session_state:
         st.session_state['queries'] = {}
 
     st.markdown(f"""
     <h4 style="background-color: {CLAIRE_DEEP_PURPLE}; color: white; padding: 10px;">
-        Simulate a Store
+        STORE MANAGER
     </h4>
     """, unsafe_allow_html=True)
 
@@ -125,21 +122,22 @@ def store_manager_app():
     query_options = list(store_questions.keys())
     selected_query = st.selectbox("Select a query", query_options if query_options else ["Select a query"])
 
-    if unpin_button_pressed and selected_query != "Select a query":
-        queries_for_store.pop(selected_query, None)
-        delete_query_from_db(selected_query)
-        st.success(f"Query '{selected_query}' has been removed.")
-    elif unpin_button_pressed:
-        st.warning("Select a query to unpin.")
-
     if selected_query and selected_query != "Select a query":
-        sql_query = queries_for_store[selected_query]["sql"]
+        sql_query = store_questions[selected_query]["sql"]
         conn = connect_to_db(DB_NAME)
         cur = conn.cursor()
         cur.execute(sql_query)
         getDataTable = cur.fetchall()
+        columns = [column[0] for column in cur.description]
+        getDataTable = DataFrame(getDataTable, columns=columns)
 
         st.dataframe(getDataTable)
 
-        nlr = queries_for_store[selected_query]["nlr"]
+        nlr = store_questions[selected_query]["nlr"]
         st.write(nlr)
+
+# Main Application
+set_custom_css()
+
+# Load the STORE MANAGER app directly without sidebar or toggle
+store_manager_app()
