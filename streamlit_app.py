@@ -89,7 +89,7 @@ def store_manager_app():
         "What is the net sales on July 31, 2023 compared to the same period last year for latest location of store FIVE POINTS PLAZA?":
         {
             "sql": "SELECT f.NetSaleLocal, f.NetSaleLocalLY FROM fact_Sale f JOIN dim_Calendar c ON f.CalendarKey = c.CalendarKey JOIN dim_Location_Latest l ON f.LocationLatestKey = l.LocationLatestKey WHERE l.LatestLocation = 'FIVE POINTS PLAZA' AND c.CalendarDate = '2023-07-31';",
-            "nlr": "On July 31, 2023, the net sales in USD for the latest location of the store FIVE POINTS PLAZA were as follows: 80, 196.96, and 484.48. In comparison, there were no net sales recorded for the same period last year."
+            "nlr": "On July 31, 2023, the net sales in USD for the latest location of the store FIVE POINTS PLAZA were as follows: 80.00, 196.96, and 484.48. In comparison, there were no net sales recorded for the same period last year."
         },
     }
 
